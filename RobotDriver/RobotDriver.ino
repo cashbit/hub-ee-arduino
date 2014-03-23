@@ -1,7 +1,9 @@
 /*
 Carlo Cassinari - cashbit
 2014-03-23
-Library to drive a robot with hub-ee wheels and Arduino.
+Sketch to drive a robot with hub-ee wheels and Arduino.
+
+https://github.com/cashbit/hub-ee-arduino
  
 To drive send these commands:
  
@@ -84,6 +86,8 @@ float robotSpeed = 0 ; // 0 - 255
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
+String _oldbuffer ; 
+  
 void setup()
 {
   pinMode(motor1QeiAPin, INPUT_PULLUP);
@@ -95,6 +99,9 @@ void setup()
   
   attachInterrupt(1, Motor1quickQEI, CHANGE);
   attachInterrupt(0, Motor2quickQEI, CHANGE);
+  
+  _oldbuffer = "" ;
+  
   Serial.begin(9600);
   //inputString.reserve(200);
   //inputString = "dir:1,dis:2000,vel:150" ;
@@ -102,7 +109,6 @@ void setup()
   
   loopDelay = (int)round(1000/loopFrequency);
   
-  Serial.println("STARTING");
 }
 
 
@@ -122,11 +128,13 @@ void loop()
     distanceToDestination = 0 ;
     emergency(0) ;
   } else {
+    /*
     float distanceDeceleration = distanceToDestination/robotSpeed ;
     if (distanceDeceleration < 0.4){
       // we start to decelerate to avoid fast stopping
       if (speedSetPoint > approachingSpeed) setSpeedSetPoint(approachingSpeed);
     }
+    */
     int deltaSpeed = calcDeltaSpeed() ;
     motor1Speed += deltaSpeed ;
     if (motor1Speed > 255) motor1Speed = 255 ;
@@ -141,16 +149,8 @@ void loop()
   motor1Wheel.setMotorPower(motor1Speed);
   motor2Wheel.setMotorPower(motor2Speed);
   
-  
-  char _buffer[300];
-  char float_str3[16] = "";
-  dtostrf(distanceToDestination,4,2,float_str3);  
-  sprintf(_buffer,  "{\"sx\":{\"speed\":%d,\"counter\":%d,\"direction\":%d},\"dx\":{\"speed\":%d,\"counter\":%d,\"direction\":%d},\"distanceleft\":%s}",
-    motor2Speed,motor2Counter,motor2Direction == motor2DirectionForward,
-    motor1Speed,motor1Counter,motor1Direction == motor1DirectionForward,
-    float_str3
-  );
-  Serial.println(_buffer);
+
+  getStatus(0) ;
   
   delay(loopDelay);
 
@@ -252,21 +252,40 @@ void processCommand(String command){
   String instruction = getValue(command,':',0);
   int value = getValue(command,':',1).toInt();
   int error = 1 ;
-  Serial.print("Processing command: ");
-  Serial.print(instruction);
-  Serial.print(":");
-  Serial.println(value);
+  //Serial.print("Processing command: ");
+  //Serial.print(instruction);
+  //Serial.print(":");
+  //Serial.println(value);
   if (instruction == "eme") error = emergency(0) ;
   if (instruction == "vel") error = setSpeedSetPoint(value);
   if (instruction == "dir") error = setMotorDirection(value);
   if (instruction == "dis") error = setDistanceToCover(value);
   if (instruction == "rot") error = setRotationToValue(value);
+  if (instruction == "sta") error = getStatus(1) ;
   if (error) {
-    Serial.print("Error processing command:");
-    Serial.println(command);
+    Serial.print("{\"error\" : \"Error processing command: ");
+    Serial.print(command);
+    Serial.println("\"}");
   }
 }
 
+int getStatus(int value){
+  char _buffer[300];
+  char float_str3[16] = "";
+  dtostrf(distanceToDestination,4,2,float_str3);  
+  sprintf(_buffer,  "{\"sx\":{\"speed\":%d,\"counter\":%d,\"direction\":%d},\"dx\":{\"speed\":%d,\"counter\":%d,\"direction\":%d},\"distanceleft\":%s}",
+    motor2Speed,motor2Counter,motor2Direction == motor2DirectionForward,
+    motor1Speed,motor1Counter,motor1Direction == motor1DirectionForward,
+    float_str3
+  );
+  
+  String _bufferString = _buffer ;
+  if ((_bufferString != _oldbuffer) || value){
+    Serial.println(_buffer);
+    _oldbuffer = _bufferString ;
+  }
+  return 0 ;
+}
 int emergency(int value){
   robotDirection = 0;
   robotRotating = 0 ;
