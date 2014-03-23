@@ -6,11 +6,11 @@ Sketch to drive a robot with [HUBee Wheels](http://www.creative-robotics.com/?q=
 
 ## Install
 
-You need to download the [library](http://www.creative-robotics.com/sites/default/files/software/bmd-s/HUBeeBMDWheel_arduinoLib.zip) from this (page)[http://www.creative-robotics.com/?q=hubee-resources]: and install it in the Arduino IDE.
+You need to download the [library](http://www.creative-robotics.com/sites/default/files/software/bmd-s/HUBeeBMDWheel_arduinoLib.zip) from [this page](http://www.creative-robotics.com/?q=hubee-resources): and install it in the Arduino IDE.
 
 ## Driving
 
-To drive send these commands:
+To drive send these commands on the Ardunino serial port, followed by CR to confirm:
 ```
   eme:0 --> emergency stop
 
@@ -31,12 +31,17 @@ The robot sends back on the serial the status with a json string like this:
 
 When distanceleft equals 0, the robot has runned for the requested steps with dis command.
  
-Examples:
+You can concatenate many commands in one line, examples:
+
+- make 100 steps forward, max speed
 
 ```
-  make 100 steps forward, max speed:  dir:1,dis:100,vel:255
-  
-  rotate by 90 steps on the left at speed 100: rot:90;vel:100
+  dir:1,dis:100,vel:255
+```
+- rotate by 90 steps on the right at speed 100
+
+```  
+  rot:90;vel:100
 ```
   
 Note: every time the robot is approaching the distanceleft 0 value, it sets automatically the speed to 50 to slow down (only if the speed is more than 50).
