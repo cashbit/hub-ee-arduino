@@ -45,3 +45,15 @@ You can concatenate many commands in one line, examples:
 ```
   
 Note: every time the robot is approaching the distanceleft 0 value, it sets automatically the speed to 50 to slow down (only if the speed is more than 50).
+
+
+## Hardware
+
+The hardware needed to start:
+
+- Two [HUB-ee wheels](http://www.creative-robotics.com/?q=catalog/1)
+- Two [HUB-ee Open Collector break out board](http://www.creative-robotics.com/?q=node/483)
+- Two [HUB-e cables](http://www.creative-robotics.com/?q=node/70)
+- One [Arduino](http://arduino.cc) (tested on 2009, UNO is ok)
+- USB Cable to connect Ardunino
+- Some wires to connect the break out board with Arduino (and a few time to solder them), please refer to the code for the wiring
